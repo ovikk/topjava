@@ -14,17 +14,41 @@ import java.util.*;
  */
 public class UserMealsUtil {
     public static void main(String[] args) {
-        List<UserMeal> mealList = Arrays.asList(
-                new UserMeal(LocalDateTime.of(2015, Month.JUNE, 30,10,0), "A", 500),
-                new UserMeal(LocalDateTime.of(2015, Month.JUNE, 30,13,0), "B", 500),
-                new UserMeal(LocalDateTime.of(2015, Month.JUNE, 30,20,0), "C", 500),
+        List<UserMeal> mealList = UserMealsGenerator.generateUserMealList(5000000);
 
-                new UserMeal(LocalDateTime.of(2015, Month.JUNE, 29,10,0), "A", 400),
-                new UserMeal(LocalDateTime.of(2015, Month.JUNE, 29,13,0), "B", 400),
-                new UserMeal(LocalDateTime.of(2015, Month.JUNE, 29,20,0), "C", 400)
-        );
+        getFilteredMealsWithExceeded(mealList, LocalTime.of(11, 0), LocalTime.of(14,0), 1300);
+        getFilteredMealsWithExceededWithoutStream(mealList, LocalTime.of(11, 0), LocalTime.of(14,0), 1300);
 
-        System.out.println(getFilteredMealsWithExceeded(mealList, LocalTime.of(11, 0), LocalTime.of(14,0), 1300));
+    }
+
+    public static List<UserMealWithExceed> getFilteredMealsWithExceededWithoutStream (List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+
+        List<UserMealWithExceed> filteredList = new ArrayList<>();
+        Map<LocalDate, Integer> dateCaloriesMap = new HashMap<>();
+
+        long tStart = System.nanoTime();
+
+        for (UserMeal userMeal : mealList) {
+            if (dateCaloriesMap.containsKey(userMeal.toLocalDate())) {
+                dateCaloriesMap.put(userMeal.toLocalDate(), dateCaloriesMap.get(userMeal.toLocalDate()) + userMeal.getCalories());
+            }
+            else {
+                dateCaloriesMap.put(userMeal.toLocalDate(), userMeal.getCalories());
+            }
+        }
+        mealList.stream().filter(userMeal -> userMeal.toLocalTime().isAfter(startTime) && userMeal.toLocalTime().isBefore(endTime)).forEach(userMeal -> {
+            if (dateCaloriesMap.get(userMeal.toLocalDate()) > caloriesPerDay) {
+                filteredList.add(new UserMealWithExceed(userMeal, true));
+            } else {
+                filteredList.add(new UserMealWithExceed(userMeal, false));
+            }
+        });
+
+        long tEnd = System.nanoTime();
+        System.out.println("Time for for streams: " + (tEnd - tStart));
+
+        return filteredList;
+
 
     }
 
@@ -32,15 +56,7 @@ public class UserMealsUtil {
         List<UserMealWithExceed> filteredList = new ArrayList<>();
         Map<LocalDate, Integer> dateCaloriesMap = new HashMap<>();
 
-        /*for (UserMeal userMeal :
-                mealList) {
-            if (dateCaloriesMap.containsKey(userMeal.toLocalDate())) {
-                dateCaloriesMap.put(userMeal.toLocalDate(), dateCaloriesMap.get(userMeal.toLocalDate()) + userMeal.getCalories());
-            }
-            else {
-                dateCaloriesMap.put(userMeal.toLocalDate(), userMeal.getCalories());
-            }
-        }*/
+        long tStart = System.nanoTime();
 
         mealList.
                 stream().
@@ -57,14 +73,15 @@ public class UserMealsUtil {
                 .stream()
                 .filter(userMeal -> userMeal.toLocalTime().isAfter(startTime) && userMeal.toLocalTime().isBefore(endTime))
                 .forEach(userMeal -> {
-                    System.out.println("Third");
-                    System.out.println(dateCaloriesMap);
                     if (dateCaloriesMap.get(userMeal.toLocalDate()) > caloriesPerDay) {
                         filteredList.add(new UserMealWithExceed(userMeal, true));
                     } else {
                         filteredList.add(new UserMealWithExceed(userMeal, false));
                     }
                 });
+
+        long tEnd = System.nanoTime();
+        System.out.println("Time for streams: " + (tEnd - tStart));
         return filteredList;
     }
 
