@@ -23,11 +23,28 @@ public class UserMealWithExceed {
         this.exceed = exceed;
     }
 
+    public UserMealWithExceed(UserMeal userMeal, boolean exceed) {
+        this.dateTime = userMeal.getDateTime();
+        this.description = userMeal.getDescription();
+        this.calories = userMeal.getCalories();
+        this.exceed = exceed;
+    }
+
     public LocalDate toLocalDate() {
         return this.dateTime.toLocalDate();
     }
 
     public LocalTime toLocalTime() {
         return this.dateTime.toLocalTime();
+    }
+
+    @Override
+    public String toString() {
+        return "UserMealWithExceed{" +
+                "dateTime=" + dateTime +
+                ", description='" + description + '\'' +
+                ", calories=" + calories +
+                ", exceed=" + exceed +
+                '}';
     }
 }

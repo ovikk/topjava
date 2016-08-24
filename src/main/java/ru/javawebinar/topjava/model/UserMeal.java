@@ -39,4 +39,13 @@ public class UserMeal {
     public LocalTime toLocalTime() {
         return this.dateTime.toLocalTime();
     }
+
+    @Override
+    public String toString() {
+        return "UserMeal{" +
+                "dateTime=" + dateTime +
+                ", description='" + description + '\'' +
+                ", calories=" + calories +
+                '}';
+    }
 }
